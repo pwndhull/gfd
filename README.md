@@ -53,3 +53,15 @@ rebuild.
 in-book "Git sandbox" — it does not run real Git and has no files. It's intentionally
 labeled as a simulator throughout the book so readers never confuse its output with
 real Git's.
+
+## Deploying
+
+The site is published with GitHub Pages from the `docs/` folder on `main`. A
+GitHub Actions workflow (`.github/workflows/deploy.yml`) lints and rebuilds the
+book automatically on every push that touches `content/`, `src/`, `public/`,
+`build.mjs`, or `lint.mjs`, and commits the refreshed `docs/index.html` back to
+`main` — so `docs/` never has to be built and copied by hand.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
