@@ -183,7 +183,7 @@ export function Home() {
         )}
       </div>
       {importMsg && (
-        <div style={{ marginTop: 8, fontSize: 13, color: importMsg.ok ? 'var(--accent)' : 'var(--danger)' }}>
+        <div className="import-msg" style={{ color: importMsg.ok ? 'var(--accent)' : 'var(--danger)' }}>
           {importMsg.ok ? <I.check /> : <I.alert />} {importMsg.text}
         </div>
       )}

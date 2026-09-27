@@ -347,6 +347,7 @@ h1.title {
 .callout > .callout-body > *:last-child { margin-bottom: 12px; }
 .callout.solution { padding: 0; }
 .callout.solution > summary { list-style: none; padding: 12px 18px; font-family: var(--font-display); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.callout.solution > summary svg { width: 15px; height: 15px; flex: none; }
 .callout.solution > summary::-webkit-details-marker { display: none; }
 .callout.solution[open] > summary { border-bottom: 1px solid var(--line); }
 .callout.solution > .callout-body { padding: 14px 18px 4px; }
@@ -538,6 +539,7 @@ h1.title {
 /* Exercise */
 .exercise { margin: 22px 0; border: 1px solid var(--line); border-left: 3px solid var(--head); border-radius: var(--radius); background: var(--surface); padding: 16px 18px 6px; max-width: 100% !important; }
 .exercise-head { font-family: var(--font-display); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--head); display: flex; gap: 8px; align-items: center; }
+.exercise-head svg { width: 15px; height: 15px; flex: none; }
 .exercise-title { font-family: var(--font-display); font-size: 17px; font-weight: 650; margin: 4px 0 8px; }
 .exercise .prose, .exercise .ex-body { font-size: 16.5px; }
 .exercise .sol-toggle { margin: 4px 0 12px; }
@@ -749,3 +751,83 @@ select.btn { appearance: auto; padding-right: 8px; }
 .prose ul.task-list li { display: flex; gap: 10px; align-items: baseline; }
 .task-box { flex: none; width: 15px; height: 15px; border: 2px solid var(--line-strong); border-radius: 4px; transform: translateY(2px); background: var(--surface); }
 .task-box.on { background: var(--accent); border-color: var(--accent); }
+
+.import-msg { margin-top: 8px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.import-msg svg { width: 15px; height: 15px; flex: none; }
+
+/* ==========================================================================
+   Print — a chapter (or any page) saved as PDF or sent to a printer.
+   Strips the app shell down to the content: no sidebar, rail, mobile topbar
+   or interactive controls, full-width content, and colors forced to the
+   light palette regardless of the reader's theme so nothing prints on a
+   near-black background by accident.
+   ========================================================================== */
+@media print {
+  :root,
+  :root:not([data-theme="light"]),
+  :root[data-theme="dark"] {
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #eef2f0;
+    --surface-3: #e4eae7;
+    --line: #cdd6d2;
+    --line-strong: #b3bfba;
+    --ink: #111916;
+    --ink-2: #34403c;
+    --muted: #5b6964;
+    --accent: #0a7563;
+    --accent-hover: #075f50;
+    --accent-ink: #ffffff;
+    --accent-soft: #d9eee8;
+    --head: #a95f00;
+    --head-soft: #fbead3;
+    --danger: #b0213f;
+    --danger-soft: #f9e0e5;
+    --warn: #8f5a00;
+    --warn-soft: #fbefd7;
+    --info: #2855b8;
+    --info-soft: #e1e9fb;
+    --ok: #1f7a36;
+    --ok-soft: #dcf0e1;
+    --shadow: none;
+  }
+
+  @page { margin: 1.6cm; }
+
+  * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+  html, body { height: auto; background: #fff; }
+
+  /* App shell: drop the chrome, let content fill the page. */
+  .app, .main-wrap { display: block; }
+  .sidebar, .rail, .topbar, .scrim, .search-scrim,
+  .toc-mobile, .hero-actions, .ch-foot, .term-in {
+    display: none !important;
+  }
+  .main { padding: 0 !important; }
+  .page, .page.wide { max-width: none; margin: 0; }
+
+  /* Every interactive control except a quiz's answer choices, which read
+     fine as a plain lettered list once their hover/press states are gone. */
+  button:not(.q-opt) { display: none !important; }
+  .q-opt { border-color: var(--line-strong) !important; background: none !important; }
+  .q-opt.right, .q-opt.wrong { background: var(--surface-2) !important; }
+
+  a { text-decoration: none; }
+  .prose a { text-decoration: underline; text-underline-offset: 2px; }
+
+  /* Scrollable-on-screen content must not get clipped on paper. */
+  .term-out { max-height: none; overflow: visible; }
+  .diagram-scroll, .viz-graph, .graph-fig pre, .table-wrap { overflow: visible; }
+  .diagram svg { min-width: 0; width: 100%; }
+
+  /* Keep headings with what follows them, and small self-contained blocks
+     from splitting across a page break. */
+  h1, h2, h3, h4, .eyebrow, .objectives h2 { break-after: avoid-page; }
+  .callout, .q, .defs .d, .contents-ch, .cmdx, .chip, .graph-fig, .exercise {
+    break-inside: avoid-page;
+  }
+
+  .search-hint, .kbd { display: none !important; }
+}
