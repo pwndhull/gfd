@@ -39,6 +39,7 @@ export const I = {
   swap: S(<><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" /></>),
   download: S(<><path d="M12 3v12M7 11l5 5 5-5" /><path d="M4 19h16" /></>),
   upload: S(<><path d="M12 21V9M7 13l5-5 5 5" /><path d="M4 19h16" /></>),
+  keyboard: S(<><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M6 10h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01M7 14h10" /></>),
 };
 
 export function BrandMark({ className }: P) {

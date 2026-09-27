@@ -5,6 +5,7 @@ import { chapterById, chapters } from './lib/content';
 import { actions, getProgress } from './lib/progress';
 import { Sidebar } from './components/Sidebar';
 import { SearchDialog } from './components/SearchDialog';
+import { KeyboardHelp } from './components/KeyboardHelp';
 import { ChapterView, RightRail } from './components/ChapterView';
 import { Home } from './pages/Home';
 import { CommandReference, CheatSheet, Glossary } from './pages/Reference';
@@ -61,6 +62,7 @@ export function App() {
   const [route, setRoute] = React.useState<Route>(() => parseHash(location.hash));
   const [menu, setMenu] = React.useState(false);
   const [searching, setSearching] = React.useState(false);
+  const [showShortcuts, setShowShortcuts] = React.useState(false);
 
   React.useEffect(() => { applyTheme(getProgress().theme); }, []);
 
@@ -81,6 +83,9 @@ export function App() {
         const i = chapters.findIndex(c => c.id === route.id);
         const target = chapters[i + (e.key === ']' ? 1 : -1)];
         if (target) location.hash = '#ch-' + target.id;
+      } else if (!typing && e.key === '?') {
+        e.preventDefault();
+        setShowShortcuts(true);
       } else if (e.key === 'Escape') {
         setMenu(false);
       }
@@ -116,24 +121,27 @@ export function App() {
           <button className="icon-btn" onClick={() => setMenu(true)} aria-label="Open table of contents" aria-expanded={menu}><I.menu /></button>
           <span className="tb-title">{titleFor(route)}</span>
           <button className="icon-btn" onClick={() => setSearching(true)} aria-label="Search"><I.search /></button>
+          <button className="icon-btn" onClick={() => setShowShortcuts(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><I.keyboard /></button>
           <ThemeToggle />
         </header>
         <div className={'main-wrap' + (chapter ? '' : ' no-rail')}>
           <main className="main" id="main" tabIndex={-1}>
-            <DesktopThemeToggle />
+            <DesktopThemeToggle onShortcuts={() => setShowShortcuts(true)} />
             {view}
           </main>
           {chapter && <RightRail chapter={chapter} />}
         </div>
       </div>
       {searching && <SearchDialog onClose={() => setSearching(false)} />}
+      {showShortcuts && <KeyboardHelp onClose={() => setShowShortcuts(false)} />}
     </div>
   );
 }
 
-function DesktopThemeToggle() {
+function DesktopThemeToggle({ onShortcuts }: { onShortcuts: () => void }) {
   return (
-    <div className="desk-theme" style={{ position: 'absolute', top: 16, right: 16 }}>
+    <div className="desk-theme" style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 6 }}>
+      <button className="icon-btn" onClick={onShortcuts} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><I.keyboard /></button>
       <ThemeToggle />
     </div>
   );
