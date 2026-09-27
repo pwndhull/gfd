@@ -10,6 +10,10 @@ const contentDir = path.join(root, 'content');
 const genDir = path.join(root, 'src', 'generated');
 fs.mkdirSync(genDir, { recursive: true });
 
+const SITE_URL = 'https://pwndhull.github.io/gfd/';
+const TITLE = 'Git for Developers';
+const DESCRIPTION = 'An interactive book that teaches Git from your first commit to professional workflows: 80 chapters, a safe Git sandbox, 24 hands-on labs, and a scored final assessment.';
+
 // 1. Collect chapters (content/chapters/*.md, sorted by filename)
 const chDir = path.join(contentDir, 'chapters');
 const chapterFiles = fs.readdirSync(chDir).filter(f => f.endsWith('.md')).sort();
@@ -57,24 +61,62 @@ const result = await build({
 const js = result.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
 const css = fs.readFileSync(path.join(root, 'src', 'styles.css'), 'utf8');
 
-const html = `<title>Git for Developers</title>
-<meta name="description" content="An interactive book that teaches Git from your first commit to professional workflows.">
+const head = `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${TITLE}</title>
+<meta name="description" content="${DESCRIPTION}">
+<link rel="canonical" href="${SITE_URL}">
+<meta name="theme-color" content="#0a7563">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="${TITLE}">
+<meta property="og:title" content="${TITLE}">
+<meta property="og:description" content="${DESCRIPTION}">
+<meta property="og:url" content="${SITE_URL}">
+<meta property="og:image" content="${SITE_URL}og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${TITLE}">
+<meta name="twitter:description" content="${DESCRIPTION}">
+<meta name="twitter:image" content="${SITE_URL}og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 ${css}
-</style>
+</style>`;
+
+const html = `<!doctype html>
+<html lang="en">
+<head>
+${head}
+</head>
+<body>
 <div id="root"><div class="boot">Loading the book…</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script>
 ${js}
 </script>
+</body>
+</html>
 `;
 
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist', 'index.html'), html);
+
+// Copy static assets (favicon, icons, OG image) alongside the page.
+const publicDir = path.join(root, 'public');
+if (fs.existsSync(publicDir)) {
+  for (const f of fs.readdirSync(publicDir)) {
+    fs.copyFileSync(path.join(publicDir, f), path.join(root, 'dist', f));
+  }
+}
+
 const kb = (Buffer.byteLength(html) / 1024).toFixed(0);
 const words = [...chapters, ...Object.values(refs)].join(' ').split(/\s+/).length;
 console.log(`dist/index.html  ${kb} KB  | ${chapters.length} chapters | ~${words.toLocaleString()} words of content`);
