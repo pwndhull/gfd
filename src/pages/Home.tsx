@@ -63,12 +63,25 @@ export function Home() {
   const [importMsg, setImportMsg] = React.useState<{ ok: boolean; text: string } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  function handleExport() {
-    const blob = new Blob([JSON.stringify(exportProgress(), null, 2)], { type: 'application/json' });
+  async function handleExport() {
+    const data = JSON.stringify(exportProgress(), null, 2);
+    const filename = `git-for-developers-progress-${new Date().toISOString().slice(0, 10)}.json`;
+
+    // When this page is running inside a platform that grants a "downloads"
+    // capability (e.g. a Claude Artifact sandbox), a plain <a download> click
+    // does nothing there, so offer the file through that capability instead.
+    const claudeGlobal = (window as any).claude;
+    const downloads = claudeGlobal?.use ? await claudeGlobal.use('downloads').catch(() => null) : null;
+    if (downloads) {
+      try { await downloads.save({ filename, data }); } catch { /* declined, or nothing more we can do */ }
+      return;
+    }
+
+    const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `git-for-developers-progress-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   }
