@@ -37,6 +37,8 @@ export const I = {
   wrench: S(<><path d="M14.7 6.3a4 4 0 0 0 5 5L22 14l-8 8-2.3-2.3a4 4 0 0 0-5-5L4 12l8-8Z" /></>),
   eye: S(<><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></>),
   swap: S(<><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" /></>),
+  download: S(<><path d="M12 3v12M7 11l5 5 5-5" /><path d="M4 19h16" /></>),
+  upload: S(<><path d="M12 21V9M7 13l5-5 5 5" /><path d="M4 19h16" /></>),
 };
 
 export function BrandMark({ className }: P) {

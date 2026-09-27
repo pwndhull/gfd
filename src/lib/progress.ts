@@ -57,6 +57,68 @@ const toggleIn = (arr: string[], id: string, on?: boolean) => {
   return arr;
 };
 
+// --- Export / import -------------------------------------------------
+// Lets a reader carry progress across browsers, devices, or a cleared
+// localStorage by saving it to a JSON file and loading it back later.
+
+export interface ProgressExport {
+  app: 'git-for-developers';
+  version: 1;
+  exportedAt: string;
+  progress: Progress;
+}
+
+export function exportProgress(): ProgressExport {
+  return { app: 'git-for-developers', version: 1, exportedAt: new Date().toISOString(), progress: state };
+}
+
+function isStringArray(v: unknown): v is string[] {
+  return Array.isArray(v) && v.every(x => typeof x === 'string');
+}
+
+// Accepts either a full export (`{ app, version, progress }`) or a bare
+// progress object (e.g. a raw copy of the localStorage value), and keeps
+// only fields of the expected shape — anything else in the file is ignored
+// rather than trusted.
+function sanitizeProgress(input: unknown): Progress {
+  const src = (input && typeof input === 'object' && 'progress' in (input as any) && (input as any).progress
+    ? (input as any).progress
+    : input) as Partial<Progress> | null;
+  const answers: Record<string, boolean> = {};
+  if (src?.answers && typeof src.answers === 'object') {
+    for (const [k, v] of Object.entries(src.answers as Record<string, unknown>)) {
+      if (typeof v === 'boolean') answers[k] = v;
+    }
+  }
+  return {
+    completed: isStringArray(src?.completed) ? src!.completed : [],
+    labs: isStringArray(src?.labs) ? src!.labs : [],
+    answers,
+    current: typeof src?.current === 'string' ? src!.current : null,
+    assessmentBest: typeof src?.assessmentBest === 'number' ? src!.assessmentBest : null,
+    projectSteps: isStringArray(src?.projectSteps) ? src!.projectSteps : [],
+    theme: src?.theme === 'light' || src?.theme === 'dark' ? src.theme : null,
+  };
+}
+
+/** Parses and applies a previously-exported progress file. Throws a
+ *  message-carrying Error on invalid JSON or an unrecognizable shape;
+ *  callers should show `err.message` to the reader. */
+export function importProgress(raw: string): Progress {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error("That file isn't valid JSON.");
+  }
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error("That file doesn't look like a progress export.");
+  }
+  state = sanitizeProgress(parsed);
+  save();
+  return state;
+}
+
 export const actions = {
   toggleChapter: (id: string, on?: boolean) => update(p => ({ ...p, completed: toggleIn(p.completed, id, on) })),
   toggleLab: (id: string, on?: boolean) => update(p => ({ ...p, labs: toggleIn(p.labs, id, on) })),

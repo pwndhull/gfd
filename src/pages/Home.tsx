@@ -1,6 +1,6 @@
 import React from 'react';
 import { chapters, parts, totalMinutes, labEntries, allChapterQuizzes, chapterById } from '../lib/content';
-import { useProgress, actions } from '../lib/progress';
+import { useProgress, actions, exportProgress, importProgress } from '../lib/progress';
 import { I } from '../components/Icons';
 
 function ProgressGraph() {
@@ -60,6 +60,35 @@ export function Home() {
   const minutesLeft = chapters.filter(c => !p.completed.includes(c.id)).reduce((s, c) => s + c.minutes, 0);
   const hours = (m: number) => (m >= 60 ? `${Math.floor(m / 60)}h ${m % 60 ? (m % 60) + 'm' : ''}` : `${m}m`);
   const [confirmReset, setConfirmReset] = React.useState(false);
+  const [importMsg, setImportMsg] = React.useState<{ ok: boolean; text: string } | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  function handleExport() {
+    const blob = new Blob([JSON.stringify(exportProgress(), null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `git-for-developers-progress-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        importProgress(String(reader.result));
+        setImportMsg({ ok: true, text: 'Progress imported.' });
+      } catch (err) {
+        setImportMsg({ ok: false, text: err instanceof Error ? err.message : 'Import failed.' });
+      }
+    };
+    reader.onerror = () => setImportMsg({ ok: false, text: "Couldn't read that file." });
+    reader.readAsText(file);
+  }
 
   return (
     <div className="page wide">
@@ -134,6 +163,15 @@ export function Home() {
 
       <div style={{ marginTop: 40, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', color: 'var(--muted)', fontSize: 13 }}>
         <span>Progress is saved in this browser only.</span>
+        <button className="btn small ghost" onClick={handleExport}><I.download />Export progress</button>
+        <button className="btn small ghost" onClick={() => fileInputRef.current?.click()}><I.upload />Import progress</button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          style={{ display: 'none' }}
+          onChange={handleImportFile}
+        />
         {!confirmReset ? (
           <button className="btn small ghost" onClick={() => setConfirmReset(true)}><I.reset />Reset progress</button>
         ) : (
@@ -144,6 +182,11 @@ export function Home() {
           </>
         )}
       </div>
+      {importMsg && (
+        <div style={{ marginTop: 8, fontSize: 13, color: importMsg.ok ? 'var(--accent)' : 'var(--danger)' }}>
+          {importMsg.ok ? <I.check /> : <I.alert />} {importMsg.text}
+        </div>
+      )}
     </div>
   );
 }
